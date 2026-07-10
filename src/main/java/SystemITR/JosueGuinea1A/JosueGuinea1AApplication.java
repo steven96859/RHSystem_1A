@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class JosueGuinea1AApplication {
+public class  JosueGuinea1AApplication {
 
 	public static void main(String[] args) {
         // Cargar variables del .env a System Properties

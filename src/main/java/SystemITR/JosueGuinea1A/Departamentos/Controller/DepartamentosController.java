@@ -30,9 +30,11 @@ public class DepartamentosController {
             //Creamos un objeto DTO porque el service.insertarDatos retornará un objeto de tipo DepartamentosDTO
             DepartamentosDTO objDTO = service.insertarDatos(json);
             if (objDTO == null){
+                log.info("Intento de insercion fallido: " + objDTO);
                 ApiResponse respuesta = new ApiResponse(false,"No se pudo completar el proceso de inserción", json);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuesta);
             }
+            log.info("Nuevo datos de departamento ingresados: " + objDTO);
             ApiResponse respuesta = new ApiResponse(true, "Dato ingresado exitosamente", objDTO);
             return ResponseEntity.ok(respuesta);
         }catch (Exception e){
@@ -54,9 +56,8 @@ public class DepartamentosController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(respuestaNoData);
         }catch (Exception e){
             log.info("No hay departamentos registrados");
-            log.info("No hay departamentos registrados");
             e.printStackTrace();
-            ApiResponse<DepartamentosDTO> respuestaError = new ApiResponse<>(false,"No se pudo completar la busqueda del ID: ", null);
+            ApiResponse<List<DepartamentosDTO>> respuestaError = new ApiResponse<>(false,"No se pudo completar la busqueda del ID: ", null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(respuestaError);
         }
     }
@@ -76,6 +77,56 @@ public class DepartamentosController {
             log.info("No hay departamentos registrados");
             e.printStackTrace();
             ApiResponse<DepartamentosDTO> respuestaError = new ApiResponse<>(false,"No se pudo completar la busqueda del ID: " + id, null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(respuestaError);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<DepartamentosDTO>> eliminarDepartamento(@PathVariable Long id){
+        try {
+            boolean resouesta = service.eliminarInfo(id);
+            if (resouesta) {
+                ApiResponse<DepartamentosDTO> respuestaExitosamento = new ApiResponse<>(true, "dato con ID: " + id + " eliminado", null);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(respuestaExitosamento);
+            }
+            ApiResponse<DepartamentosDTO> respuestaNoRealizado = new ApiResponse<>(
+                    false,
+                    "El proceso de eliminacion no se pudo completar",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(respuestaNoRealizado);
+        } catch (Exception e) {
+            log.info("Error critico, consulte con el administrador");
+            e.printStackTrace();
+            ApiResponse<DepartamentosDTO> respuestaError = new ApiResponse<>(false, "Error Critico, Consulte con el administrador para solucionar el problema", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(respuestaError);
+        }
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<DepartamentosDTO>> actualizarDepartamentto(
+      @PathVariable Long id,
+      @Valid @RequestBody DepartamentosDTO dto
+    ){
+        try{
+            DepartamentosDTO objdto = service.actualizarinfo(id, dto);
+            if (objdto == null){
+                ApiResponse<DepartamentosDTO> respuestaNoRealizado = new ApiResponse<>(
+                        false,
+                        "No se pudo completar el proceso de actualizar",
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuestaNoRealizado);
+            }
+            ApiResponse<DepartamentosDTO> respuestaExitosa = new ApiResponse<>(
+                    true,
+                    "Proceso completado",
+                    objdto
+            );
+            return ResponseEntity.ok(respuestaExitosa);
+        }catch (Exception e){
+            log.info("Error critico, consulte con el administrador");
+            e.printStackTrace();
+            ApiResponse<DepartamentosDTO> respuestaError = new ApiResponse<>(false, "Error Critico, Consulte con el administrador para solucionar el problema", null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(respuestaError);
         }
     }

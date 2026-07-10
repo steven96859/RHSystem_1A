@@ -72,4 +72,16 @@ public class DepartamentosService {
         Optional<DepartamentosEntity> entidadOpcional = repo.findById(id);
         return entidadOpcional.map(this::convertirADTO).orElse(null);
     }
+
+    public boolean eliminarInfo(Long id) {
+        if (repo.existsById(id)){
+            repo.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    public DepartamentosDTO actualizarinfo(Long id, @Valid DepartamentosDTO dto) {
+        return null;
+    }
 }

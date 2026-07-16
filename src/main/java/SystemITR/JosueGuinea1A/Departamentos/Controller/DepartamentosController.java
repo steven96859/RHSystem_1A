@@ -16,6 +16,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/api/departamento")
+@CrossOrigin
 public class DepartamentosController {
 
     @Autowired
@@ -102,27 +103,26 @@ public class DepartamentosController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(respuestaError);
         }
     }
+
+
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<DepartamentosDTO>> actualizarDepartamentto(
       @PathVariable Long id,
       @Valid @RequestBody DepartamentosDTO dto
     ){
         try{
-            DepartamentosDTO objdto = service.actualizarinfo(id, dto);
-            if (objdto == null){
-                ApiResponse<DepartamentosDTO> respuestaNoRealizado = new ApiResponse<>(
-                        false,
-                        "No se pudo completar el proceso de actualizar",
-                        null
-                );
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuestaNoRealizado);
+            DepartamentosDTO data = service.actualizarinfo(id, dto);
+            if (data == null){
+                log.info("Departamento con ID: "+id + " ha sido actualizado");
+                ApiResponse<DepartamentosDTO> respuestaExitosa = new ApiResponse<>(
+                        true,"Departamento con ID: "+id+" ha sido actalizado", data);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuestaExitosa);
             }
-            ApiResponse<DepartamentosDTO> respuestaExitosa = new ApiResponse<>(
-                    true,
-                    "Proceso completado",
-                    objdto
-            );
-            return ResponseEntity.ok(respuestaExitosa);
+            log.warn("no se pudo completar la actualizacion del departamento con ID: "+ id);
+            ApiResponse<DepartamentosDTO> respuestaNoCompletada = new ApiResponse<>(
+              false,"No se pudo completar la actualizacion del departamento con ID: "+id , null);
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuestaNoCompletada);
         }catch (Exception e){
             log.info("Error critico, consulte con el administrador");
             e.printStackTrace();
@@ -130,4 +130,31 @@ public class DepartamentosController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(respuestaError);
         }
     }
+
+     @GetMapping("/abreviatura/{abreviatura}")
+    public ResponseEntity<ApiResponse<DepartamentosDTO>> buscarPorAbreviatura(@PathVariable String abreviatura){
+        try{
+            DepartamentosDTO data = service.buscarAbreviatura(abreviatura);
+            if (data != null){
+                //armar la respuesta
+
+                log.info("Depertamneto encontrado con abreviatura: " + abreviatura);
+                ApiResponse<DepartamentosDTO> respuestaExito = new ApiResponse<>(
+                        true,"Departamento encontrado con abreviatura: "+abreviatura,data
+                );
+                return ResponseEntity.ok(respuestaExito);
+            }
+           log.warn("Departamento no encontrado: "+abreviatura);
+            ApiResponse<DepartamentosDTO> respuestaNoEncontrada = new ApiResponse<>(
+                    false,"Departamento no encontrado " + abreviatura, null
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(respuestaNoEncontrada);
+        }catch (Exception e){
+            log.info("No hay departamentos registrados");
+            e.printStackTrace();
+            ApiResponse<DepartamentosDTO> respuestaError = new ApiResponse<>(false,"No se pudo completar la busqueda del ID: " + abreviatura, null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(respuestaError);
+        }
+     }
+
 }
